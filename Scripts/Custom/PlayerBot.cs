@@ -10,16 +10,18 @@ namespace Server.Mobiles
     {
         private bool m_HasMount;
         private Horse m_Mount;
+        private string m_City;
         private Point3D m_SpawnPoint;
 
         [Constructable]
-        public PlayerBot(string name, string title, bool female, bool hasMount, Point3D location, Map map)
+        public PlayerBot(string name, string title, bool female, bool hasMount, Point3D location, Map map, string city)
             : base()
         {
             Name = name;
             Title = title;
             Female = female;
             m_HasMount = hasMount;
+            m_City = city;
             Home = location;
             m_SpawnPoint = Home; 
             RangeHome = 0; // Bot bleibt an der Spawn-Position
