@@ -83,8 +83,19 @@ namespace Server.Commands
 
                         foreach (Mobile m in World.Mobiles.Values)
                         {
-                            if ((m is PlayerBotMage && botClass.Equals("Mage", StringComparison.OrdinalIgnoreCase)) ||
-                                (m is PlayerBotPaladin && botClass.Equals("Paladin", StringComparison.OrdinalIgnoreCase)))
+                            if (
+                                (m is PlayerBotMage && botClass.Equals("Mage", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotPaladin && botClass.Equals("Paladin", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotSamurai && botClass.Equals("Samurai", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotHunter && botClass.Equals("Hunter", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotHealer && botClass.Equals("Healer", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotThief && botClass.Equals("Thief", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotTailor && botClass.Equals("Tailor", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotBlacksmith && botClass.Equals("Blacksmith", StringComparison.OrdinalIgnoreCase)) ||
+                                (m is PlayerBotAlchemist && botClass.Equals("Alchemist", StringComparison.OrdinalIgnoreCase))
+
+
+                                )
                             {
                                 if (m.Name == name && m.Map == map)
                                 {
@@ -176,6 +187,34 @@ namespace Server.Commands
                         else if (botClass.Equals("Paladin", StringComparison.OrdinalIgnoreCase))
                         {
                             bot = new PlayerBotPaladin(name, title, female, hasMount, location, map, city);
+                        }
+                        else if (botClass.Equals("Samurai", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bot = new PlayerBotSamurai(name, title, female, hasMount, location, map, city);
+                        }
+                        else if (botClass.Equals("Hunter", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bot = new PlayerBotHunter(name, title, female, hasMount, location, map, city);
+                        }
+                        else if (botClass.Equals("Thief", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bot = new PlayerBotThief(name, title, female, hasMount, location, map, city);
+                        }
+                        else if (botClass.Equals("Healer", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bot = new PlayerBotPaladin(name, title, female, hasMount, location, map, city);
+                        }
+                        else if (botClass.Equals("Tailor", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bot = new PlayerBotTailor(name, title, female, hasMount, location, map, city);
+                        }
+                        else if (botClass.Equals("Blacksmith", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bot = new PlayerBotBlacksmith(name, title, female, hasMount, location, map, city);
+                        }
+                        else if (botClass.Equals("Alchemist", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bot = new PlayerBotAlchemist(name, title, female, hasMount, location, map, city);
                         }
 
                         if (bot != null)

@@ -277,7 +277,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Custom\PlayerBot.cs" />
+    <Compile Include="Custom\PlayerBotAlchemist.cs" />
+    <Compile Include="Custom\PlayerBotBlacksmith.cs" />
+    <Compile Include="Custom\PlayerBotHealer.cs" />
+    <Compile Include="Custom\PlayerBotHunter.cs" />
     <Compile Include="Custom\PlayerBotPaladin.cs" />
+    <Compile Include="Custom\PlayerBotSamurai.cs" />
+    <Compile Include="Custom\PlayerBotTailor.cs" />
+    <Compile Include="Custom\PlayerBotThief.cs" />
     <Compile Include="Custom\VendorLocations.cs" />
     <Compile Include="Deprecated\GamblingStone.cs" />
     <Compile Include="Deprecated\GMStone.cs" />
