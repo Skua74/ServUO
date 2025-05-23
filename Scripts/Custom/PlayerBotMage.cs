@@ -8,8 +8,8 @@ namespace Server.Mobiles
     public class PlayerBotMage : PlayerBot
     {
         [Constructable]
-        public PlayerBotMage(string name, string title, bool female, bool hasMount, Point3D location, Map map)
-            : base(name, title, female, hasMount, location, map)
+        public PlayerBotMage(string name, string title, bool female, bool hasMount, Point3D location, Map map, string city)
+            : base(name, title, female, hasMount, location, map, city)
         {
             AI = AIType.AI_Mage;
 

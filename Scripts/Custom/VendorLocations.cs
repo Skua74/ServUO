@@ -40,7 +40,7 @@ namespace Server
             string path = Path.Combine(Core.BaseDirectory, "Custom/VendorLocations.cfg");
             if (!File.Exists(path))
             {
-                Console.WriteLine("VendorLocations.cfg not found at {0}.", path);
+                //Console.WriteLine("VendorLocations.cfg not found at {0}.", path);
                 return;
             }
 
@@ -60,7 +60,7 @@ namespace Server
                     {
                         currentCity = line.Substring(0, line.Length - 1).Trim();
                         _locations[currentCity] = new List<VendorLocation>();
-                        Console.WriteLine($"VendorLocations: Loaded city {currentCity} at line {lineNumber}.");
+                        //Console.WriteLine($"VendorLocations: Loaded city {currentCity} at line {lineNumber}.");
                         continue;
                     }
 
@@ -86,7 +86,7 @@ namespace Server
                         int z = int.Parse(parts[4].Trim());
                         Point3D position = new Point3D(x, y, z);
                         _locations[currentCity].Add(new VendorLocation(vendorType, skillToPerform, position));
-                        Console.WriteLine($"VendorLocations: Added {vendorType} at {position} for city {currentCity} at line {lineNumber}.");
+                        //Console.WriteLine($"VendorLocations: Added {vendorType} at {position} for city {currentCity} at line {lineNumber}.");
                     }
                     catch (Exception ex)
                     {
