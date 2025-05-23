@@ -128,9 +128,9 @@ namespace Server.Commands
                     }
 
                     string[] parts = line.Split(',');
-                    if (parts.Length < 8)
+                    if (parts.Length < 10)
                     {
-                        Console.WriteLine("Invalid format in PlayerBots.cfg at line {0}. Expected 8 fields.", lineNumber);
+                        Console.WriteLine($"Invalid format in PlayerBots.cfg at line {0}. Expected 10 fields.", lineNumber);
                         continue;
                     }
 
@@ -145,7 +145,8 @@ namespace Server.Commands
                         int y = int.Parse(parts[6].Trim());
                         int z = int.Parse(parts[7].Trim());
                         Point3D location = new Point3D(x, y, z);
-                        string mapName = parts.Length > 8 ? parts[8].Trim() : parts[7].Trim();
+                        string mapName = parts[8].Trim();
+                        string city = parts[9].Trim();
 
                         Map map = null;
                         if (string.Equals(mapName, "Felucca", StringComparison.OrdinalIgnoreCase))
@@ -170,11 +171,11 @@ namespace Server.Commands
                         Mobile bot = null;
                         if (botClass.Equals("Mage", StringComparison.OrdinalIgnoreCase))
                         {
-                            bot = new PlayerBotMage(name, title, female, hasMount, location, map);
+                            bot = new PlayerBotMage(name, title, female, hasMount, location, map, city);
                         }
                         else if (botClass.Equals("Paladin", StringComparison.OrdinalIgnoreCase))
                         {
-                            bot = new PlayerBotPaladin(name, title, female, hasMount, location, map);
+                            bot = new PlayerBotPaladin(name, title, female, hasMount, location, map, city);
                         }
 
                         if (bot != null)
@@ -193,7 +194,6 @@ namespace Server.Commands
                     }
                 }
             }
-
             Console.WriteLine("{0} PlayerBots spawned.", spawnedCount);
         }
     }
