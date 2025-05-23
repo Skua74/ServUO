@@ -1,0 +1,173 @@
+using Server;
+using Server.Items;
+using Server.Mobiles;
+using System;
+using System.Collections.Generic;
+
+namespace Server.Mobiles
+{
+    public class CityLifeNPC : BaseCreature
+    {
+        private Timer m_ActionTimer;
+        private readonly List<string> m_Phrases = new List<string>
+        {
+            "Such a nice day, isn't it?",
+            "Where is the bank?",
+            "This is such a lively City!",
+            "Watch your steps!",
+            "I heard there are some evil creatures in the woods!"
+            "bank",
+            "hlep",
+            "wwwwwwwwww",
+            "Cor Pro",
+            "In Vas Mani"
+        };
+
+        [Constructable]
+        public CityLifeNPC() : base(AIType.AI_Animal, FightMode.None, 10, 1, 0.2, 0.4)
+        {
+            Name = GetRandomName();
+            Body = Utility.RandomBool() ? 400 : 401; // Zufällig männlich oder weiblich
+            Hue = Utility.RandomSkinHue();
+
+            // Blauer Name wie bei Spielern
+            NameHue = 0x35; // Standardfarbton für Spielernamen in UO
+
+            // Zufällige Spieler-Rüstung
+            EquipPlayerArmor();
+
+            // Frisur
+            HairItemID = Utility.RandomList(0x203B, 0x203C, 0x203D, 0x2044, 0x2045);
+            HairHue = Utility.RandomHairHue();
+
+            // Eigenschaften
+            Blessed = true; // Verhindert, dass der NPC angegriffen wird
+            CantWalk = false;
+            Direction = (Direction)Utility.Random(8);
+
+            // Timer für zufällige Aktionen
+            m_ActionTimer = new ActionTimer(this);
+            m_ActionTimer.Start();
+        }
+
+        public CityLifeNPC(Serial serial) : base(serial)
+        {
+        }
+
+        private string GetRandomName()
+        {
+            string[] names = new[] { "Anna", "Ben", "Clara", "David", "Emma", "Finn", "Greta", "Hans", "Ida", "Jonas" };
+            return names[Utility.Random(names.Length)];
+        }
+
+        private void EquipPlayerArmor()
+        {
+            // Zufällige Rüstungsteile, die Spieler typischerweise tragen
+            switch (Utility.Random(3))
+            {
+                case 0: // Leder-Rüstung
+                    AddItem(new LeatherChest());
+                    AddItem(new LeatherArms());
+                    AddItem(new LeatherLegs());
+                    AddItem(new LeatherGloves());
+                    AddItem(new LeatherCap());
+                    break;
+                case 1: // Ketten-Rüstung
+                    AddItem(new ChainChest());
+                    AddItem(new ChainLegs());
+                    AddItem(new PlateArms());
+                    AddItem(new PlateGloves());
+                    AddItem(new CloseHelm());
+                    break;
+                case 2: // Platten-Rüstung
+                    AddItem(new PlateChest());
+                    AddItem(new PlateArms());
+                    AddItem(new PlateLegs());
+                    AddItem(new PlateGloves());
+                    AddItem(new PlateHelm());
+                    break;
+            }
+
+            // Zufällige Waffe oder Schild
+            if (Utility.RandomBool())
+            {
+                AddItem(Utility.RandomBool() ? (Item)new Longsword() : (Item)new HeaterShield());
+            }
+
+            // Zufällige Stiefel
+            AddItem(new Boots(Utility.RandomNeutralHue()));
+
+            // Optional: Umhang oder Robe für mehr Spieler-Look
+            if (Utility.RandomBool())
+            {
+                AddItem(new Cloak(Utility.RandomDyedHue()));
+            }
+            else
+            {
+                AddItem(new Robe(Utility.RandomDyedHue()));
+            }
+        }
+
+        public override bool HandlesOnSpeech(Mobile from)
+        {
+            return true;
+        }
+
+        public override void OnSpeech(SpeechEventArgs e)
+        {
+            if (e.Mobile.InRange(this, 3) && !e.Handled)
+            {
+                e.Handled = true;
+                Say(m_Phrases[Utility.Random(m_Phrases.Count)]);
+            }
+        }
+
+        private class ActionTimer : Timer
+        {
+            private readonly CityLifeNPC m_NPC;
+
+            public ActionTimer(CityLifeNPC npc) : base(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(Utility.RandomMinMax(15, 30)))
+            {
+                m_NPC = npc;
+            }
+
+            protected override void OnTick()
+            {
+                if (m_NPC.Deleted || !m_NPC.Alive)
+                {
+                    Stop();
+                    return;
+                }
+
+                switch (Utility.Random(3))
+                {
+                    case 0: // Zufälliges Herumlaufen
+                        m_NPC.Direction = (Direction)Utility.Random(8);
+                        m_NPC.Move(m_NPC.Direction);
+                        break;
+                    case 1: // Zufällige Animation
+                        m_NPC.Animate(Utility.RandomList(5, 6, 7), 5, 1, true, false, 0); // Gesten wie Winken oder Kratzen
+                        break;
+                    case 2: // Zufälliger Spruch
+                        m_NPC.Say(m_NPC.m_Phrases[Utility.Random(m_NPC.m_Phrases.Count)]);
+                        break;
+                }
+            }
+        }
+
+        public override void Serialize(GenericWriter writer)
+        {
+            base.Serialize(writer);
+            writer.Write((int)0); // Version
+        }
+
+        public override void Deserialize(GenericReader reader)
+        {
+            base.Deserialize(reader);
+            int version = reader.ReadInt();
+
+            m_ActionTimer = new ActionTimer(this);
+            m_ActionTimer.Start();
+        }
+    }
+}
