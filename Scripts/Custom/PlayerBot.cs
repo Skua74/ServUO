@@ -18,6 +18,7 @@ namespace Server.Mobiles
         private bool m_IsWaiting; // Wartet am Ziel?
         private Timer m_WaitTimer; // Timer für die Wartezeit
         private Timer m_MoveTimer; // Timer für fließende Bewegung
+        protected bool m_CanWalk = true;
         private Queue<Direction> m_MovePath; // Pfad als Richtungen
 
         [Constructable]
@@ -54,7 +55,7 @@ namespace Server.Mobiles
                 return;
 
             // Prüfe, ob es Zeit für eine Bewegung ist
-            if (!m_IsMovingToTarget && !m_IsWaiting && DateTime.UtcNow >= m_NextMoveTime && m_MovePath.Count == 0)
+            if (!m_IsMovingToTarget && !m_IsWaiting && DateTime.UtcNow >= m_NextMoveTime && m_MovePath.Count == 0 && m_CanWalk)
             {
                 StartMovement();
             }

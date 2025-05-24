@@ -10,6 +10,8 @@ namespace Server.Mobiles
     {
         private DateTime m_NextSkillTime; // Zeitpunkt der nächsten Skill-Ausführung
         private Timer m_SkillTimer; // Timer für Skill-Wiederholungen
+        private int m_minSkillIntervall = 10;
+        private int m_maxSkillIntervall = 30;
 
         [Constructable]
         public PlayerBotBlacksmith(string name, string title, bool female, bool hasMount, Point3D location, Map map, string city)
@@ -33,8 +35,11 @@ namespace Server.Mobiles
 
             PackGold(20, 100);
 
+            m_CanWalk = false;
+
             // Initialisiere Skill-Timer
-            m_NextSkillTime = DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(30, 60));
+            m_NextSkillTime =
+                DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
         }
 
         public override void OnThink()
@@ -54,14 +59,23 @@ namespace Server.Mobiles
 
         private void StartSkillExecution()
         {
-            int repeatCount = Utility.RandomMinMax(2, 5); // 2–5 Wiederholungen
-            m_SkillTimer = Timer.DelayCall(TimeSpan.Zero, TimeSpan.FromSeconds(1.5), repeatCount, ExecuteSkill);
-            m_NextSkillTime = DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(30, 60));
+            int repeatCount = Utility.RandomMinMax(3, 8); // 2–5 Wiederholungen
+            m_SkillTimer = Timer.DelayCall(TimeSpan.Zero, TimeSpan.FromSeconds(1.5), repeatCount, () =>
+            {
+                ExecuteSkill();
+                if (--repeatCount <= 0)
+                {
+                    StopSkillTimer();
+                }
+            });
+            m_SkillTimer.Priority = TimerPriority.FiftyMS; // Präziser Timer
+            m_NextSkillTime =
+                DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
         }
 
         private void ExecuteSkill()
         {
-            if (ControlMaster != null || Deleted)
+            if (ControlMaster != null || Deleted || Map == null)
             {
                 StopSkillTimer();
                 return;
@@ -100,10 +114,9 @@ namespace Server.Mobiles
 
         protected override void InitOutfit()
         {
-            AddItem(new FishermansTrousers());
+            AddItem(new LongPants());
+            AddItem(new Boots(Utility.RandomNeutralHue()));
             AddItem(new FullApron(Utility.RandomNeutralHue()));
-            AddItem(new SmithHammer());
-            AddItem(new Tongs());
         }
 
         public PlayerBotBlacksmith(Serial serial) : base(serial)
@@ -124,6 +137,13 @@ namespace Server.Mobiles
             if (version >= 0)
             {
                 m_NextSkillTime = reader.ReadDateTime();
+                // Stelle sicher, dass m_NextSkillTime nicht in der Vergangenheit liegt
+                if (m_NextSkillTime < DateTime.UtcNow)
+                {
+                    m_NextSkillTime =
+                        DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
+
+                }
             }
         }
     }

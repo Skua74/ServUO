@@ -10,6 +10,8 @@ namespace Server.Mobiles
     {
         private DateTime m_NextSkillTime; // Zeitpunkt der nächsten Skill-Ausführung
         private Timer m_SkillTimer; // Timer für Skill-Wiederholungen
+        private int m_minSkillIntervall = 30;
+        private int m_maxSkillIntervall = 60;
 
         [Constructable]
         public PlayerBotTailor(string name, string title, bool female, bool hasMount, Point3D location, Map map, string city)
@@ -34,7 +36,8 @@ namespace Server.Mobiles
             PackGold(20, 100);
 
             // Initialisiere Skill-Timer
-            m_NextSkillTime = DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(30, 60));
+            m_NextSkillTime =
+                DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
         }
 
         public override void OnThink()
@@ -54,22 +57,30 @@ namespace Server.Mobiles
 
         private void StartSkillExecution()
         {
-            int repeatCount = Utility.RandomMinMax(2, 5); // 2–5 Wiederholungen
-            m_SkillTimer = Timer.DelayCall(TimeSpan.Zero, TimeSpan.FromSeconds(1.5), repeatCount, ExecuteSkill);
-            m_NextSkillTime = DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(30, 60));
+            int repeatCount = Utility.RandomMinMax(3, 8); // 2–5 Wiederholungen
+            m_SkillTimer = Timer.DelayCall(TimeSpan.Zero, TimeSpan.FromSeconds(1.5), repeatCount, () =>
+            {
+                ExecuteSkill();
+                if (--repeatCount <= 0)
+                {
+                    StopSkillTimer();
+                }
+            });
+            m_SkillTimer.Priority = TimerPriority.FiftyMS; // Präziser Timer
+            m_NextSkillTime =
+                DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
         }
 
         private void ExecuteSkill()
         {
-            if (ControlMaster != null || Deleted)
+            if (ControlMaster != null || Deleted || Map == null)
             {
                 StopSkillTimer();
                 return;
             }
-
-            // Nähen-Animation und Sound
-            Animate(9, 5, 1, true, false, 0); // Nähen-Animation
-            PlaySound(0x248); // Nähen-Sound
+            // Nähen-Animation und Sound (alternative IDs)
+            Animate(33, 5, 1, true, false, 0); // Generische Arbeits-Animation
+            PlaySound(0x248); // Nadelgeräusch
             // Kein Partikeleffekt für Tailoring
         }
 
@@ -87,7 +98,7 @@ namespace Server.Mobiles
             bool result = base.SetControlMaster(m);
             if (m != null)
             {
-                StopSkillTimer(); // Stoppe Skill-Ausführung, wenn gehired
+                StopSkillTimer();
             }
             return result;
         }
@@ -102,8 +113,6 @@ namespace Server.Mobiles
         {
             AddItem(new FancyShirt(Utility.RandomNeutralHue()));
             AddItem(new LongPants(Utility.RandomNeutralHue()));
-            AddItem(new SewingKit());
-            AddItem(new Scissors());
         }
 
         public PlayerBotTailor(Serial serial) : base(serial)
@@ -124,6 +133,13 @@ namespace Server.Mobiles
             if (version >= 0)
             {
                 m_NextSkillTime = reader.ReadDateTime();
+                // Stelle sicher, dass m_NextSkillTime nicht in der Vergangenheit liegt
+                if (m_NextSkillTime < DateTime.UtcNow)
+                {
+                    m_NextSkillTime =
+                        DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
+
+                }
             }
         }
     }

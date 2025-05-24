@@ -10,6 +10,8 @@ namespace Server.Mobiles
     {
         private DateTime m_NextSkillTime; // Zeitpunkt der nächsten Skill-Ausführung
         private Timer m_SkillTimer; // Timer für Skill-Wiederholungen
+        private int m_minSkillIntervall = 30;
+        private int m_maxSkillIntervall = 60;
 
         [Constructable]
         public PlayerBotAlchemist(string name, string title, bool female, bool hasMount, Point3D location, Map map, string city)
@@ -34,7 +36,8 @@ namespace Server.Mobiles
             PackGold(20, 100);
 
             // Initialisiere Skill-Timer
-            m_NextSkillTime = DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(30, 60));
+            m_NextSkillTime =
+               DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
         }
 
         public override void OnThink()
@@ -54,9 +57,18 @@ namespace Server.Mobiles
 
         private void StartSkillExecution()
         {
-            int repeatCount = Utility.RandomMinMax(2, 5); // 2–5 Wiederholungen
-            m_SkillTimer = Timer.DelayCall(TimeSpan.Zero, TimeSpan.FromSeconds(1.5), repeatCount, ExecuteSkill);
-            m_NextSkillTime = DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(30, 60));
+            int repeatCount = Utility.RandomMinMax(3, 8); // 2–5 Wiederholungen
+            m_SkillTimer = Timer.DelayCall(TimeSpan.Zero, TimeSpan.FromSeconds(1.5), repeatCount, () =>
+            {
+                ExecuteSkill();
+                if (--repeatCount <= 0)
+                {
+                    StopSkillTimer();
+                }
+            });
+            m_SkillTimer.Priority = TimerPriority.FiftyMS; // Präziser Timer
+            m_NextSkillTime =
+                DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
         }
 
         private void ExecuteSkill()
@@ -102,8 +114,6 @@ namespace Server.Mobiles
         {
             AddItem(new Robe(Utility.RandomGreenHue()));
             AddItem(new Sandals());
-            AddItem(new MortarPestle());
-            AddItem(new Bottle(5)); // Einige Fläschchen
         }
 
         public PlayerBotAlchemist(Serial serial) : base(serial)
@@ -124,6 +134,13 @@ namespace Server.Mobiles
             if (version >= 0)
             {
                 m_NextSkillTime = reader.ReadDateTime();
+                // Stelle sicher, dass m_NextSkillTime nicht in der Vergangenheit liegt
+                if (m_NextSkillTime < DateTime.UtcNow)
+                {
+                    m_NextSkillTime =
+                        DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(m_minSkillIntervall, m_maxSkillIntervall));
+
+                }
             }
         }
     }
